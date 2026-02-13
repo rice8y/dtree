@@ -18,7 +18,7 @@ jobs:
       - name: Create distribution folder
         run: |
           mkdir -p dist/dtree
-          cp -r ./* dist/dtree/
+          rsync -a --exclude dist ./ dist/dtree/
 
       - name: Compress dist
         run: cd dist && zip -r ../dtree-${{ github.ref_name }}.zip dtree
