@@ -1,10 +1,21 @@
-#let _is-emoji(str) = (
-  if str.contains(regex("[\\p{Emoji}]+")) {
+#let EMOJI_METRICS_QUIRKS = (
+  "apple color emoji": -0.15em,
+  "noto emoji": 0em,
+  "twemoji": -0.1em,
+  "twitter": -0.1em,
+  "openmoji": -0.1em,
+  "toss face": 0.25em,
+  "fluent emoji": -0.02em,
+  "segoe ui emoji": -0.02em,
+)
+
+#let _is-emoji(s) = {
+  if type(s) == str and s.contains(regex("[\\p{Emoji}]+")) {
     true
   } else {
     false
   }
-)
+}
 
 #let _parse-length(s) = {
   let s = s.trim()
@@ -78,6 +89,7 @@
   icon-size: 1em,
   icon-dx: -1pt,
   icon-dy: 0pt,
+  emoji-dy: "auto",
 ) = {
   let default-stroke = 0.7pt + black
   let final-stroke = if stroke == none { default-stroke }
@@ -199,6 +211,7 @@
 
     if target-icon != none {
       let content-cand = none
+      let is-emoji = false
       
       if target-icon in icons {
         let raw-val = icons.at(target-icon)
@@ -208,11 +221,8 @@
           content-cand = box(height: p-size, raw-val)
         } else {
           let str-val = str(raw-val)
-          if _is-emoji(str-val) {
-            content-cand = move(dy: -0.15em, text(size: p-size, fill: p-fill, top-edge: "bounds", bottom-edge: "bounds", str-val))
-          } else {
-            content-cand = text(size: p-size, fill: p-fill, top-edge: "bounds", bottom-edge: "bounds", str-val)
-          }
+          is-emoji = _is-emoji(str-val)
+          content-cand = text(size: p-size, fill: p-fill, str-val)
         }
       } 
       else {
@@ -224,16 +234,39 @@
           if target-icon.ends-with(".png") or target-icon.ends-with(".jpg") or target-icon.ends-with(".svg") {
              content-cand = image(target-icon, fit: "contain", height: p-size)
           } else {
-             if _is-emoji(target-icon) {
-               content-cand = move(dy: -0.15em, text(size: p-size, fill: p-fill, top-edge: "bounds", bottom-edge: "bounds", target-icon))
-             } else {
-               content-cand = text(size: p-size, fill: p-fill, top-edge: "bounds", bottom-edge: "bounds", target-icon)
-             }
+             is-emoji = _is-emoji(target-icon)
+             content-cand = text(size: p-size, fill: p-fill, target-icon)
           }
         }
       }
+      
       if content-cand != none {
-        icon-display = move(dx: p-dx, dy: p-dy, content-cand)
+        icon-display = context {
+          let extra-dy = 0pt
+          if is-emoji {
+            if emoji-dy == "auto" {
+              let current-fonts = text.font
+              if type(current-fonts) == str { current-fonts = (current-fonts,) }
+              if current-fonts != none {
+                let matched = false
+                for f in current-fonts {
+                  let f-lower = lower(f)
+                  for (q-font, q-dy) in EMOJI_METRICS_QUIRKS {
+                    if f-lower.contains(q-font) {
+                      extra-dy = q-dy
+                      matched = true
+                      break
+                    }
+                  }
+                  if matched { break }
+                }
+              }
+            } else {
+              extra-dy = emoji-dy
+            }
+          }
+          move(dx: p-dx, dy: p-dy + extra-dy, content-cand)
+        }
       }
     } else if default-icon != none {
       icon-display = move(dx: icon-dx, dy: icon-dy, default-icon)
