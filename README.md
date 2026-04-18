@@ -9,7 +9,7 @@
 The simplest way to use `dtree` is to pass a raw block. By default, it uses the standard monospace font defined in your document.
 
 ````typ
-#import "@preview/dtree:0.1.0": dtree
+#import "@preview/dtree:0.1.1": dtree
 
 #dtree(```
 /
