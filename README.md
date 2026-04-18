@@ -84,6 +84,19 @@ project/
 
 <img src="images/ex03.png" alt="Advanced: Icon Rules & Images" width=300px>
 
+### 4. Emoji Alignment
+
+Different emoji fonts have varying baseline metrics, which can cause unicode icons to appear vertically misaligned compared to regular images. By default, `dtree` automatically detects your current text font using Typst's `context` and applies a predefined vertical offset (`emoji-dy: "auto"`) for known emoji fonts (such as Apple Color Emoji, Noto Emoji, Twemoji, OpenMoji, etc.).
+
+If you are using an unsupported font or want to manually adjust the position, you can override this behavior by passing a specific length:
+
+```typ
+#dtree(
+  emoji-dy: 0pt, // Overrides the automatic offset calculation
+  // ...
+)
+```
+
 ## Input Syntax
 
 Each line in the raw block is parsed as follows:
@@ -228,6 +241,12 @@ Icons are resolved in the following order (highest to lowest priority):
 <td><code>length</code></td>
 <td><code>0pt</code></td>
 <td>Vertical offset for icons.</td>
+</tr>
+<tr>
+<td><code>emoji-dy</code></td>
+<td><code>str</code> or <code>length</code></td>
+<td><code>"auto"</code></td>
+<td>Vertical offset specifically for unicode emojis. <code>"auto"</code> detects the font and applies a known quirk offset. Set a specific length to override.</td>
 </tr>
 </tbody>
 </table>
